@@ -51,43 +51,37 @@ function UploadForm(){
         }
     };
 
-    // Klasy dla przycisku wysyłania 
     const submitButtonClass = `
-        w-full sm:w-auto px-8 py-3 text-lg font-semibold rounded-lg transition duration-300 ease-in-out shadow-lg
+        w-full sm:w-auto px-8 py-3 text-lg font-semibold rounded-xl transition duration-300 ease-in-out shadow-lg
         transform hover:scale-105 active:scale-95
-        ${loading || !video ? 'bg-zinc-600 text-zinc-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700 text-white focus:outline-none focus:ring-4 focus:ring-red-300'}
+        ${loading || !video ? 'bg-zinc-700 text-zinc-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700 text-white focus:outline-none focus:ring-4 focus:ring-red-400/50'}
     `;
 
-    // Klasy dla wyników
     const resultClass = result === "PASS" 
-        ? 'bg-green-700 text-green-100 border-green-500' 
-        : 'bg-red-700 text-red-100 border-red-500';      
+        ? 'bg-gradient-to-br from-green-700 to-emerald-800 text-white border-green-500' 
+        : 'bg-gradient-to-br from-red-700 to-rose-800 text-white border-red-500';      
 
     return (
-        // Główny kontener: dopasowany do stylów kalkulatorów
-        <div className="max-w-3xl mx-auto p-10 bg-zinc-950 text-white shadow-2xl rounded-2xl border-2 border-red-700">
+        <div className="max-w-3xl mx-auto my-10 p-10 bg-zinc-950 text-white shadow-2xl rounded-2xl border-2 border-red-700">
             
-            {/* Nagłówek Sekcji */}
-            <header className="mb-8 pb-4 border-b border-zinc-700">
-                <h2 className="text-4xl font-extrabold text-white tracking-tight drop-shadow text-center">
+            <header className="mb-8 pb-6 border-b border-zinc-700 text-center">
+                <h2 className="text-4xl font-extrabold text-white tracking-tight drop-shadow-lg mb-2">
                     Analiza Przysiadu 🏋️
                 </h2>
-                <p className="text-zinc-400 mt-2 text-center">
+                <p className="text-zinc-400 text-lg">
                     Wgraj swój film, a sztuczna inteligencja oceni, czy próba kwalifikuje się jako zaliczona.
                 </p>
             </header>
             
-            {/* 1. SEKCJA WEJŚCIOWA (INPUT) */}
-            <form onSubmit={handleSubmit} className="mb-10 p-6 bg-zinc-900 rounded-xl shadow-inner border border-zinc-800">
-                <h3 className="text-xl font-bold mb-5 text-zinc-100 border-b border-zinc-700 pb-2">
+            <form onSubmit={handleSubmit} className="mb-12 p-8 bg-zinc-900 rounded-2xl shadow-xl border border-zinc-800">
+                <h3 className="text-2xl font-bold mb-6 text-zinc-100 border-b border-zinc-700 pb-3">
                     Krok 1: Dodaj Film
                 </h3>
 
-                <div className="flex flex-col md:flex-row items-stretch md:items-center gap-6">
+                <div className="flex flex-col md:flex-row items-stretch md:items-center gap-8">
                     
-                    {/* Pole wyboru pliku */}
                     <div className="flex-grow">
-                        <label className="block text-sm font-medium text-zinc-300 mb-2">
+                        <label className="block text-base font-medium text-zinc-300 mb-3">
                             Wybierz plik wideo (Max. 5 sekund)
                         </label>
                         <input 
@@ -95,21 +89,20 @@ function UploadForm(){
                             accept="video/*" 
                             onChange={(e) => setVideo(e.target.files[0])}
                             disabled={loading}
-                            className="block w-full text-sm text-zinc-300 
+                            className="block w-full text-base text-zinc-300 
                                 file:mr-4 file:py-3 file:px-6
                                 file:rounded-xl file:border-0
                                 file:text-base file:font-semibold
                                 file:bg-zinc-700 file:text-white
                                 hover:file:bg-zinc-600 disabled:file:bg-zinc-800 disabled:file:text-zinc-500
-                                bg-zinc-800 rounded-xl p-3 cursor-pointer transition duration-200
+                                bg-zinc-800/50 rounded-xl p-3 cursor-pointer transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-500
                             "
                         />
                         {video && (
-                            <p className="mt-3 text-sm text-zinc-400 truncate">Wybrano: **{video.name}**</p>
+                            <p className="mt-4 text-sm text-zinc-400 truncate">Wybrano: **{video.name}**</p>
                         )}
                     </div>
-                    
-                    {/* Przycisk wysyłania */}
+
                     <button 
                         type="submit"
                         disabled={loading || !video}
@@ -123,45 +116,40 @@ function UploadForm(){
                                 </svg>
                                 Analizuję...
                             </>
-                        ) : "Krok 2: Analizuj"}
+                        ) : "Krok 2: Analizuj Film"}
                     </button>
                 </div>
             </form>
             
-            {/* 2. SEKCJA STATUSU I WYNIKU (OUTPUT) */}
-            <div className="p-6 bg-zinc-900 rounded-xl shadow-inner border border-zinc-800">
-                <h3 className="text-xl font-bold mb-5 text-zinc-100 border-b border-zinc-700 pb-2">
+            <div className="p-8 bg-zinc-900 rounded-2xl shadow-xl border border-zinc-800">
+                <h3 className="text-2xl font-bold mb-6 text-zinc-100 border-b border-zinc-700 pb-3">
                     Status i Rezultat
                 </h3>
 
-                {/* Wyróżniona informacja */}
-                <p className="text-sm mb-6 border-l-4 border-yellow-500 pl-4 bg-zinc-800 text-yellow-300 rounded-r-md py-3 shadow-md">
+                <p className="text-base mb-8 border-l-4 border-yellow-500 pl-4 bg-zinc-800 text-yellow-300 rounded-r-md py-3 shadow-md">
                     <span className="font-semibold">Czekam na dane:</span> Po wysłaniu filmu tutaj pojawi się rezultat analizy.
                 </p>
                 
-                <div className="space-y-4">
-                    {/* Komunikat ładowania */}
+                <div className="space-y-6">
                     {loading && (
-                        <div className="p-5 text-center text-zinc-400 bg-zinc-700 rounded-lg shadow-md border border-zinc-600">
-                            <p className="font-medium text-lg">⏳ Przetwarzanie filmu... Proszę czekać.</p>
+                        <div className="p-6 text-center text-zinc-300 bg-zinc-700 rounded-lg shadow-md border border-zinc-600">
+                            <p className="font-medium text-xl">⏳ Przetwarzanie filmu... Proszę czekać.</p>
                         </div>
                     )}
 
-                    {/* Komunikat błędu */}
                     {error && (
-                        <div className="p-5 bg-red-800 text-red-100 border border-red-600 rounded-lg flex items-center shadow-lg">
-                            <span className="text-2xl mr-4">❌</span>
-                            <p className="font-medium text-lg">Błąd przesyłania: **{error}**</p>
+                        <div className="p-6 bg-red-800 text-white border border-red-600 rounded-lg flex items-center shadow-lg">
+                            <span className="text-3xl mr-4">❌</span>
+                            <p className="font-medium text-xl">Błąd przesyłania: **{error}**</p>
                         </div>
                     )}
 
-                    {/* Wynik analizy */}
                     {result && (
-                        <div className={`mt-6 p-8 border-2 rounded-xl text-center shadow-2xl ${resultClass}`}>
-                            <h3 className="text-4xl font-extrabold mb-3">
+                        <div className={`mt-6 p-10 border-2 rounded-xl text-center shadow-2xl ${resultClass}`}>
+                            <h3 className="text-5xl font-extrabold mb-3 animate-pulse">
                                 {result === "PASS" ? "✅ RUCH ZALICZONY!" : "❌ RUCH NIEZALICZONY"}
                             </h3>
-                            <p className="text-xl font-medium">Oficjalny wynik analizy AI: <strong className="uppercase">{result}</strong></p>
+                            <p className="text-2xl font-medium">Oficjalny wynik analizy AI: <strong className="uppercase">{result}</strong></p>
                         </div>
                     )}
                 </div>

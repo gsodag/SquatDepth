@@ -37,71 +37,86 @@ const RMCalc = () => {
   });
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-zinc-900 to-zinc-800 py-10">
+    <div className="min-h-screen flex items-center justify-center bg-zinc-900 py-10">
       <div className="bg-zinc-950 rounded-2xl shadow-2xl p-8 w-full max-w-4xl border-2 border-red-700">
-        <h1 className="text-4xl font-extrabold text-center mb-4 text-white tracking-tight drop-shadow">1RM & Rep Max Table</h1>
+        <h1 className="text-4xl font-extrabold text-center mb-6 text-white tracking-tight drop-shadow">Kalkulator 1RM & Rep Max</h1>
         <form
-          className="flex flex-col md:flex-row gap-4 items-center justify-center mb-8"
+          className="flex flex-col md:flex-row gap-6 items-end justify-center mb-10 p-6 bg-zinc-900 rounded-xl shadow-inner border border-zinc-800"
           onSubmit={e => e.preventDefault()}
         >
-          <div className="flex flex-col">
-            <label className="text-zinc-200 mb-1">Weight Lifted:</label>
+          <div className="flex flex-col flex-1">
+            <label className="text-zinc-300 mb-2 text-lg font-medium">Waga (kg):</label>
             <input
               type="number"
               value={weight}
               min={0}
               onChange={e => setWeight(e.target.value)}
-              className="bg-zinc-800 text-white p-2 rounded border border-zinc-700 focus:border-red-500 focus:ring-2 focus:ring-red-600"
+              className="bg-zinc-800 text-white p-3 rounded-xl border border-zinc-700 focus:border-red-500 focus:ring-2 focus:ring-red-600 shadow-md transition"
               placeholder="0"
             />
           </div>
-          <div className="flex flex-col">
-            <label className="text-zinc-200 mb-1">Reps Performed:</label>
+          <div className="flex flex-col flex-1">
+            <label className="text-zinc-300 mb-2 text-lg font-medium">Powtórzenia:</label>
             <input
               type="number"
               value={reps}
               min={1}
               max={10}
               onChange={e => setReps(e.target.value)}
-              className="bg-zinc-800 text-white p-2 rounded border border-zinc-700 focus:border-red-500 focus:ring-2 focus:ring-red-600"
+              className="bg-zinc-800 text-white p-3 rounded-xl border border-zinc-700 focus:border-red-500 focus:ring-2 focus:ring-red-600 shadow-md transition"
               placeholder="0"
             />
           </div>
         </form>
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-center border-separate border-spacing-y-2">
-            <thead>
-              <tr>
-                <th className="text-white text-lg font-semibold">RM</th>
-                <th className="text-white text-lg font-semibold">Epley</th>
-                <th className="text-white text-lg font-semibold">Brzycki</th>
-                <th className="text-white text-lg font-semibold">Lombardi</th>
-                <th className="text-white text-lg font-semibold">o'Conner</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map(row => (
-                <tr key={row.rm} className="bg-zinc-800 rounded">
-                  <td className="text-red-400 font-semibold py-2">{row.rm}</td>
-                  <td className="text-zinc-100">{row.epley}</td>
-                  <td className="text-zinc-100">{row.brzycki}</td>
-                  <td className="text-zinc-100">{row.lombardi}</td>
-                  <td className="text-zinc-100">{row.oconner}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+
+        <div className="p-6 bg-zinc-900 rounded-xl shadow-xl border border-zinc-800">
+            <h2 className="text-2xl font-bold mb-4 text-zinc-100 border-b border-zinc-700 pb-2">
+                Tabela Rep Max
+            </h2>
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-center border-separate border-spacing-y-3">
+                <thead>
+                  <tr className="bg-zinc-800 rounded-xl shadow-lg">
+                    <th className="text-red-400 text-lg font-extrabold py-3 rounded-l-xl">RM</th>
+                    <th className="text-zinc-200 text-lg font-semibold">Epley</th>
+                    <th className="text-zinc-200 text-lg font-semibold">Brzycki</th>
+                    <th className="text-zinc-200 text-lg font-semibold">Lombardi</th>
+                    <th className="text-zinc-200 text-lg font-semibold rounded-r-xl">O'Conner</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map(row => (
+                    <tr key={row.rm} className="bg-zinc-800/70 hover:bg-zinc-700/80 transition duration-200 shadow-md">
+                      <td className="text-red-400 font-extrabold py-3 rounded-l-xl">{row.rm}</td>
+                      <td className="text-white">{row.epley}</td>
+                      <td className="text-white">{row.brzycki}</td>
+                      <td className="text-white">{row.lombardi}</td>
+                      <td className="text-white rounded-r-xl">{row.oconner}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
         </div>
-        <div className="mt-8 text-zinc-400 text-sm text-center">
-          <div>
-            <b>Estimated 1RM:</b>
-          </div>
-          <div>
-            Epley: <span className="text-white">{oneRM.epley.toFixed(2)} kg</span> |{" "}
-            Brzycki: <span className="text-white">{oneRM.brzycki.toFixed(2)} kg</span> |{" "}
-            Lombardi: <span className="text-white">{oneRM.lombardi.toFixed(2)} kg</span> |{" "}
-            o'Conner: <span className="text-white">{oneRM.oconner.toFixed(2)} kg</span>
-          </div>
+
+        <div className="mt-10 p-6 bg-zinc-900 rounded-xl shadow-xl border border-zinc-800 text-center">
+            <div className="text-xl font-bold text-zinc-100 mb-4 border-b border-zinc-700 pb-2">
+                Szacowane 1RM (kg)
+            </div>
+            <div className="flex flex-wrap justify-center gap-6 text-lg font-medium">
+                <div className="text-zinc-400">
+                    Epley: <span className="text-red-400 font-bold">{oneRM.epley.toFixed(2)}</span>
+                </div>
+                <div className="text-zinc-400">
+                    Brzycki: <span className="text-red-400 font-bold">{oneRM.brzycki.toFixed(2)}</span>
+                </div>
+                <div className="text-zinc-400">
+                    Lombardi: <span className="text-red-400 font-bold">{oneRM.lombardi.toFixed(2)}</span>
+                </div>
+                <div className="text-zinc-400">
+                    O'Conner: <span className="text-red-400 font-bold">{oneRM.oconner.toFixed(2)}</span>
+                </div>
+            </div>
         </div>
       </div>
     </div>

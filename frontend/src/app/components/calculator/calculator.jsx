@@ -14,7 +14,6 @@ const DotsCalc = () => {
   const deadliftNum = parseFloat(deadlift) || 0;
   const total = squatNum + benchNum + deadliftNum;
 
-  // DOTS calculation
   let dots = 0;
   if (bwNum > 0) {
     let A, B, C, D, E;
