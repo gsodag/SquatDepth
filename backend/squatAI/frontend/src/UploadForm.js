@@ -24,7 +24,7 @@ function UploadForm(){
             const formData = new FormData();
             formData.append("file", video);
 
-            const res = await fetch("http://localhost:8003/upload", {
+            const res = await fetch("http://localhost:8001/upload", {
                 method: "POST",
                 body: formData,
             });

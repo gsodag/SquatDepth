@@ -58,3 +58,4 @@ yarn-error.log*
 /backend/SquatAI/backend/.env*
 /frontend/.env*
 /backend/.idea
+node_modules

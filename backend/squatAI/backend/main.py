@@ -7,10 +7,12 @@ import tensorflow as tf
 import numpy as np
 import pandas as pd
 import json
-from toStick import ToCSV
+from .toStick import ToCSV
 from fastapi.middleware.cors import CORSMiddleware
 import logging
 import traceback
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Konfiguracja logowania
 logging.basicConfig(level=logging.INFO)
@@ -38,8 +40,8 @@ app.add_middleware(
 )
 
 # Ścieżki do plików modelu
-PATH_TO_MODEL = "./results/Squat_CNN_LSTM_v2_20250813_012229/mdl_wts.keras"
-PATH_TO_NORMALIZATION = "./results/Squat_CNN_LSTM_v2_20250813_012229/normalization_params.json"
+PATH_TO_MODEL = os.path.join(BASE_DIR, "results/Squat_CNN_LSTM_v2_20250813_012229/mdl_wts.keras")
+PATH_TO_NORMALIZATION = os.path.join(BASE_DIR, "results/Squat_CNN_LSTM_v2_20250813_012229/normalization_params.json")
 
 
 def load_model():

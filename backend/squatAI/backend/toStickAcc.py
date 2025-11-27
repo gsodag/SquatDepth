@@ -332,7 +332,6 @@ def apply_temporal_smoothing(all_landmarks, window_size=5):
 
 
 def processing(video_path, output_path, pose):
-
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         return [], [], 0, 0
@@ -343,6 +342,7 @@ def processing(video_path, output_path, pose):
     rotation = 0
 
     try:
+        # ... (ffprobe logic remains unchanged)
         result = subprocess.run(['ffprobe', '-i', video_path, '-show_streams', '-v', 'quiet', '-print_format', 'json'],
                                 capture_output=True, text=True, check=False)
         probe_data = json.loads(result.stdout)
@@ -357,16 +357,25 @@ def processing(video_path, output_path, pose):
     except Exception:
         pass
 
+    # --- DIMENSION CALCULATION FIX ---
+
+    # 1. Calculate dimensions after metadata rotation
     if abs(rotation) % 180 == 90:
         out_width, out_height = initial_height, initial_width
     else:
         out_width, out_height = initial_width, initial_height
 
+    # 2. Account for the final, UNCONDITIONAL 90-degree rotation.
+    # Since we are adding an unconditional ROTATE_90_COUNTERCLOCKWISE later,
+    # we must SWAP the final output dimensions.
+    out_width, out_height = out_height, out_width
+
+    # The dimensions are now correctly swapped (e.g., 1080x1920 -> 1920x1080)
+
     fourcc = cv2.VideoWriter_fourcc(*'MJPG')
     out = cv2.VideoWriter(output_path, fourcc, fps, (out_width, out_height))
 
     if not out.isOpened():
-
         cap.release()
         return [], [], 0, 0
 
@@ -375,6 +384,7 @@ def processing(video_path, output_path, pose):
     frame_count = 0
     VISIBILITY_THRESHOLD_DRAW = 0.3
 
+    # Use the new, correct dimensions for current_width/height initialization
     current_width, current_height = out_width, out_height
 
     while cap.isOpened():
@@ -383,6 +393,7 @@ def processing(video_path, output_path, pose):
             break
         frame_count += 1
 
+        # 1. Apply rotation based on video metadata (rotation variable)
         if rotation == 90:
             frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
         elif rotation == 180 or rotation == -180:
@@ -390,9 +401,14 @@ def processing(video_path, output_path, pose):
         elif rotation == 270 or rotation == -90:
             frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
 
-        frame = cv2.rotate(frame, cv2.ROTATE_180)
+        # 2. Unconditional 90-degree counter-clockwise flip (to fix persistent "flipped right" issue)
+        frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
 
+        # IMPORTANT: The current_height and current_width variables MUST be updated
+        # *after* the rotation to match the frame's new dimensions for MediaPipe.
         current_height, current_width, _ = frame.shape
+
+        # ... (rest of the function is unchanged)
 
         current_time_msec = cap.get(cv2.CAP_PROP_POS_MSEC)
         current_time_sec = current_time_msec / 1000.0 if current_time_msec > 0 else frame_count / fps
