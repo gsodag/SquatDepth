@@ -59,3 +59,6 @@ yarn-error.log*
 /frontend/.env*
 /backend/.idea
 node_modules
+backend/processed_videos/1_stick.avi
+backend/requirements.txt
+
