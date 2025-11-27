@@ -6,7 +6,7 @@ const barbell = 20;
 const plateDefs = [
   { id: "25kg", label: "25 kg", value: 25, color: 'bg-red-600', thickness: 'w-6', heightClass: 'h-32' }, 
   { id: "20kg", label: "20 kg", value: 20, color: 'bg-blue-600', thickness: 'w-5', heightClass: 'h-32' },
-  { id: "15kg", label: "15 kg", value: 15, color: 'bg-yellow-300', thickness: 'w-4', heightClass: 'h-32' },
+  { id: "15kg", label: "15 kg", value: 15, color: 'bg-yellow-300', thickness: 'w-4', heightClass: 'h-30' },
   { id: "10kg", label: "10 kg", value: 10, color: 'bg-green-600', thickness: 'w-3', heightClass: 'h-28' },
   { id: "5kg", label: "5 kg", value: 5, color: 'bg-white text-zinc-900', thickness: 'w-3', heightClass: 'h-24' },
   { id: "2p5kg", label: "2.5 kg", value: 2.5, color: 'bg-black', thickness: 'w-2', heightClass: 'h-20' },
