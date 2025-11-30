@@ -7,6 +7,8 @@ function UploadForm(){
     const [result, setResult] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    // Nowy stan dla wyboru modelu (domyślnie 'comfort')
+    const [model, setModel] = useState('comfort'); // 'comfort' or 'accuracy'
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -23,6 +25,8 @@ function UploadForm(){
         try {
             const formData = new FormData();
             formData.append("file", video);
+            // Dodanie wybranego modelu do danych formularza
+            formData.append("model", model); 
 
             const res = await fetch("http://localhost:8001/upload", {
                 method: "POST",
@@ -59,7 +63,42 @@ function UploadForm(){
 
     const resultClass = result === "PASS" 
         ? 'bg-gradient-to-br from-green-700 to-emerald-800 text-white border-green-500' 
-        : 'bg-gradient-to-br from-red-700 to-rose-800 text-white border-red-500';      
+        : 'bg-gradient-to-br from-red-700 to-rose-800 text-white border-red-500';      
+
+    const ModelButton = ({ value, label, description }) => (
+        <label 
+            className={`
+                flex-1 p-5 rounded-xl cursor-pointer transition duration-300 ease-in-out border-2 
+                shadow-lg hover:shadow-red-500/50 
+                ${model === value 
+                    ? 'bg-red-700 border-red-500 text-white transform scale-[1.02]' 
+                    : 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:bg-zinc-700 hover:border-red-600'
+                }
+            `}
+        >
+            <input 
+                type="radio" 
+                name="modelSelection"
+                value={value}
+                checked={model === value}
+                onChange={() => setModel(value)}
+                className="sr-only"
+            />
+            <div className="flex flex-col items-start">
+                <span className="text-xl font-bold uppercase mb-1 flex items-center">
+                    {label}
+                    {model === value && (
+
+                        <svg className="h-5 w-5 ml-2 text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path>
+                        </svg>
+                    )}
+                </span>
+                <p className={`text-sm ${model === value ? 'text-zinc-200' : 'text-zinc-400'}`}>{description}</p>
+            </div>
+        </label>
+    );
+
 
     return (
         <div className="max-w-3xl mx-auto my-10 p-10 bg-zinc-950 text-white shadow-2xl rounded-2xl border-2 border-red-700">
@@ -72,6 +111,25 @@ function UploadForm(){
                     Wgraj swój film, a sztuczna inteligencja oceni, czy próba kwalifikuje się jako zaliczona.
                 </p>
             </header>
+
+            <div className="mb-12 p-8 bg-zinc-900 rounded-2xl shadow-xl border border-zinc-800">
+                <h3 className="text-2xl font-bold mb-6 text-zinc-100 border-b border-zinc-700 pb-3">
+                    Wybór Modelu Analizy
+                </h3>
+                <div className="flex flex-col sm:flex-row gap-4">
+                    <ModelButton 
+                        value="comfort" 
+                        label="Comfort" 
+                        description="Mniejsze wymagania dotyczące filmu. Mniej precyzyjna analiza." 
+                    />
+                    <ModelButton 
+                        value="accuracy" 
+                        label="Accuracy" 
+                        description="Większe wymagania dotyczące filmu. Bardziej precyzyjna analiza." 
+                    />
+                </div>
+                <p className="mt-4 text-sm text-zinc-400">Aktualnie wybrany model: <strong className="text-red-400">{model.toUpperCase()}</strong></p>
+            </div>
             
             <form onSubmit={handleSubmit} className="mb-12 p-8 bg-zinc-900 rounded-2xl shadow-xl border border-zinc-800">
                 <h3 className="text-2xl font-bold mb-6 text-zinc-100 border-b border-zinc-700 pb-3">
@@ -139,7 +197,9 @@ function UploadForm(){
 
                     {error && (
                         <div className="p-6 bg-red-800 text-white border border-red-600 rounded-lg flex items-center shadow-lg">
-                            <span className="text-3xl mr-4"></span>
+                            <svg className="h-6 w-6 mr-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
                             <p className="font-medium text-xl">Błąd przesyłania: **{error}**</p>
                         </div>
                     )}
