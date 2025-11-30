@@ -167,7 +167,7 @@ function UploadForm() {
 
                     <div className="flex-grow">
                         <label className="block text-base font-medium text-zinc-300 mb-3">
-                            Wybierz plik wideo (Preferowana maksymalna długość filmu: 5 sekund)
+                            Wybierz plik wideo (Preferowana długość filmu: 3-5 sekund, przytnij film zaraz przed rozpoczęciem przysiadu [zejścia ze sztangą w dół], oraz zaraz po wyprostowaniu bioder/kolan)
                         </label>
                         <input
                             type="file"
