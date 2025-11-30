@@ -7,7 +7,7 @@ function UploadForm() {
     const [result, setResult] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const [model, setModel] = useState('comfort'); // 'comfort' or 'accuracy'
+    const [model, setModel] = useState('comfort');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -63,29 +63,24 @@ function UploadForm() {
         ? 'bg-gradient-to-br from-green-700 to-emerald-800 text-white border-green-500'
         : 'bg-gradient-to-br from-red-700 to-rose-800 text-white border-red-500';
 
-    // Komponent Tooltip z nowym pozycjonowaniem
     const Tooltip = ({ content }) => {
         const [isVisible, setIsVisible] = useState(false);
 
         return (
-            // Pozycjonowanie dymka w prawym górnym rogu z marginesem
             <div
                 className="absolute top-0 right-0 p-2"
                 onMouseEnter={() => setIsVisible(true)}
                 onMouseLeave={() => setIsVisible(false)}
             >
-                {/* Ikona 'i' lub '?' */}
                 <svg className="h-4 w-4 text-zinc-400 hover:text-red-300 transition duration-150 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
 
-                {/* Dymek - teraz pozycjonowany na lewo od ikony, aby był wewnątrz formularza */}
                 {isVisible && (
                     <div className="absolute z-10 w-64 p-3 right-full top-1/2 -translate-y-1/2 mr-2
                                     text-sm text-zinc-100 bg-zinc-800 rounded-lg shadow-2xl
                                     border border-zinc-700 opacity-100 transition duration-300 pointer-events-none">
                         {content}
-                        {/* Strzałka dymka - ustawiona na prawo, by wskazywała na ikonę */}
                         <div className="absolute w-0 h-0 border-y-8 border-y-transparent border-l-8 border-l-zinc-800 right-[-8px] top-1/2 -translate-y-1/2"></div>
                     </div>
                 )}
@@ -95,7 +90,6 @@ function UploadForm() {
 
 
     const ModelButton = ({ value, label, description, tooltipContent }) => (
-        // Dodanie 'relative' jest kluczowe, aby Tooltip (który jest 'absolute') był pozycjonowany względem tego elementu.
         <label
             className={`
                 relative flex-1 p-5 rounded-xl cursor-pointer transition duration-300 ease-in-out border-2
@@ -106,7 +100,6 @@ function UploadForm() {
                 }
             `}
         >
-            {/* Tooltip w prawym górnym rogu */}
             <Tooltip content={tooltipContent} />
             
             <input
@@ -137,7 +130,7 @@ function UploadForm() {
 
             <header className="mb-8 pb-6 border-b border-zinc-700 text-center">
                 <h2 className="text-4xl font-extrabold text-white tracking-tight drop-shadow-lg mb-2">
-                    Analiza Przysiadu 🏋️
+                    Analiza Przysiadu
                 </h2>
                 <p className="text-zinc-400 text-lg">
                     Wgraj swój film, a sztuczna inteligencja oceni, czy próba kwalifikuje się jako zaliczona.
