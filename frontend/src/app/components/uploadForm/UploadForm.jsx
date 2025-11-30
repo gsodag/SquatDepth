@@ -66,7 +66,7 @@ function UploadForm(){
             
             <header className="mb-8 pb-6 border-b border-zinc-700 text-center">
                 <h2 className="text-4xl font-extrabold text-white tracking-tight drop-shadow-lg mb-2">
-                    Analiza Przysiadu 🏋️
+                    Analiza Przysiadu
                 </h2>
                 <p className="text-zinc-400 text-lg">
                     Wgraj swój film, a sztuczna inteligencja oceni, czy próba kwalifikuje się jako zaliczona.
@@ -82,7 +82,7 @@ function UploadForm(){
                     
                     <div className="flex-grow">
                         <label className="block text-base font-medium text-zinc-300 mb-3">
-                            Wybierz plik wideo (Max. 5 sekund)
+                            Wybierz plik wideo (Preferowana maksymalna długość filmu: 5 sekund)
                         </label>
                         <input 
                             type="file"
@@ -133,13 +133,13 @@ function UploadForm(){
                 <div className="space-y-6">
                     {loading && (
                         <div className="p-6 text-center text-zinc-300 bg-zinc-700 rounded-lg shadow-md border border-zinc-600">
-                            <p className="font-medium text-xl">⏳ Przetwarzanie filmu... Proszę czekać.</p>
+                            <p className="font-medium text-xl">Przetwarzanie filmu... Proszę czekać.</p>
                         </div>
                     )}
 
                     {error && (
                         <div className="p-6 bg-red-800 text-white border border-red-600 rounded-lg flex items-center shadow-lg">
-                            <span className="text-3xl mr-4">❌</span>
+                            <span className="text-3xl mr-4"></span>
                             <p className="font-medium text-xl">Błąd przesyłania: **{error}**</p>
                         </div>
                     )}
@@ -147,7 +147,7 @@ function UploadForm(){
                     {result && (
                         <div className={`mt-6 p-10 border-2 rounded-xl text-center shadow-2xl ${resultClass}`}>
                             <h3 className="text-5xl font-extrabold mb-3 animate-pulse">
-                                {result === "PASS" ? "✅ RUCH ZALICZONY!" : "❌ RUCH NIEZALICZONY"}
+                                {result === "PASS" ? "PRZYSIAD ZALICZONY!" : "PRZYSIAD NIEZALICZONY"}
                             </h3>
                             <p className="text-2xl font-medium">Oficjalny wynik analizy AI: <strong className="uppercase">{result}</strong></p>
                         </div>
