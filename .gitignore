@@ -61,5 +61,6 @@ yarn-error.log*
 node_modules
 backend/processed_videos
 backend/requirements.txt
-
+/backend/squatAI/stick_figures_acc
+/backend/squatAI/squats_acc
 

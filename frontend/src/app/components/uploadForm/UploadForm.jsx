@@ -5,6 +5,7 @@ function UploadForm() {
 
     const [video, setVideo] = useState(null);
     const [result, setResult] = useState("");
+    const [videoUrl, setVideoUrl] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [model, setModel] = useState('comfort');
@@ -20,6 +21,7 @@ function UploadForm() {
         setLoading(true);
         setError("");
         setResult("");
+        setVideoUrl("");
 
         try {
             const formData = new FormData();
@@ -41,6 +43,9 @@ function UploadForm() {
 
             if (data.prediction) {
                 setResult(data.prediction);
+                if (data.video_url) {
+                    setVideoUrl(data.video_url);
+                }
             } else if (data.detail) {
                 setError(data.detail);
             }
@@ -237,6 +242,21 @@ function UploadForm() {
                                 {result === "PASS" ? "PRZYSIAD ZALICZONY! 🎉" : "PRZYSIAD NIEZALICZONY ❌"}
                             </h3>
                             <p className="text-2xl font-medium">Oficjalny wynik analizy AI: <strong className="uppercase">{result}</strong></p>
+                        </div>
+                    )}
+
+                    {videoUrl && (
+                        <div className="mt-8">
+                            <h4 className="text-xl font-bold mb-4 text-zinc-300">Wizualizacja analizy:</h4>
+                            <div className="rounded-xl overflow-hidden shadow-2xl border border-zinc-700">
+                                <video 
+                                    controls 
+                                    className="w-full h-auto bg-black"
+                                    src={videoUrl}
+                                >
+                                    Twoja przeglądarka nie obsługuje tagu video.
+                                </video>
+                            </div>
                         </div>
                     )}
                 </div>
