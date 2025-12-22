@@ -8,16 +8,16 @@ import subprocess
 import json
 import uuid
 
-
 mp_pose = mp.solutions.pose
 POSE_CONNECTIONS = mp_pose.POSE_CONNECTIONS
 JOINT_NAMES = [l.name for l in mp_pose.PoseLandmark]
 landmark_positions = {}
 
+
 def calculate_body(landmarks):
     global landmark_positions
     if landmarks is None or not isinstance(landmarks, (list, np.ndarray)) or len(landmarks) < 33:
-        print("Error: Invalid landmarks input")
+        # print("Error: Invalid landmarks input")
         landmark_positions.clear()
         return
     try:
@@ -41,8 +41,8 @@ def calculate_body(landmarks):
         landmark_positions.clear()
 
 
-#Horizontal angle: Uses body symmetry and apparent width ratios
-#Vertical angle: Uses body proportions and joint positions
+# Horizontal angle: Uses body symmetry and apparent width ratios
+# Vertical angle: Uses body proportions and joint positions
 def calculate_camera_angles(landmarks):
     if not landmark_positions:
         return None, None
@@ -56,7 +56,16 @@ def calculate_camera_angles(landmarks):
         knee_center = (landmark_positions['left_knee'] + landmark_positions['right_knee']) / 2
         left_torso_width = np.linalg.norm(landmark_positions['left_shoulder'] - landmark_positions['left_hip'])
         right_torso_width = np.linalg.norm(landmark_positions['right_shoulder'] - landmark_positions['right_hip'])
-        torso_asymmetry = (right_torso_width - left_torso_width) / (right_torso_width + left_torso_width)
+
+        # Zabezpieczenie przed dzieleniem przez zero
+        torso_sum = right_torso_width + left_torso_width
+        if torso_sum == 0: torso_sum = 0.001
+
+        torso_asymmetry = (right_torso_width - left_torso_width) / torso_sum
+
+        if shoulder_width == 0: shoulder_width = 0.001
+        if hip_width == 0: hip_width = 0.001
+
         shoulder_hip_offset = (shoulder_center[0] - hip_center[0]) / max(shoulder_width, hip_width)
         horizontal_angle = torso_asymmetry * 45 + shoulder_hip_offset * 30
         torso_vector = hip_center - shoulder_center
@@ -68,10 +77,6 @@ def calculate_camera_angles(landmarks):
         head_to_foot_vector = ankle_center - np.linalg.norm(landmark_positions['nose'])
         overall_body_angle = np.arctan2(head_to_foot_vector[0], head_to_foot_vector[1]) * 180 / np.pi
         ankle_width = np.linalg.norm(landmark_positions['right_ankle'] - landmark_positions['left_ankle'])
-
-        if shoulder_width == 0 or hip_width == 0:
-            print("NO SHOULDER/HIPS DETECTED")
-            return None, None
 
         width_ratio = hip_width / shoulder_width
         # From front view, hip/shoulder ratio should be around 0.8-1.2
@@ -306,16 +311,17 @@ def processing(video_path, output_path, pose):
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         print(f"Error: Could not open input video {video_path}")
-        return []
+        return [], []
 
-#This is fps value - we will need that to our train code
+    # This is fps value - we will need that to our train code
     fps = cap.get(cv2.CAP_PROP_FPS)
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
     rotation = 0
     try:
-        result = subprocess.run(['ffprobe', '-i', video_path, '-show_streams', '-v', 'quiet', '-print_format', 'json'], capture_output=True, text=True, check=False)
+        result = subprocess.run(['ffprobe', '-i', video_path, '-show_streams', '-v', 'quiet', '-print_format', 'json'],
+                                capture_output=True, text=True, check=False)
         probe_data = json.loads(result.stdout)
         if 'streams' in probe_data and len(probe_data['streams']) > 0:
             for stream in probe_data['streams']:
@@ -337,13 +343,14 @@ def processing(video_path, output_path, pose):
     else:
         out_width, out_height = width, height
 
-    fourcc = cv2.VideoWriter_fourcc(*'MJPG')
+    # --- ZMIANA: Kodek avc1 (H.264) ---
+    fourcc = cv2.VideoWriter_fourcc(*'avc1')
     out = cv2.VideoWriter(output_path, fourcc, fps, (out_width, out_height))
 
     if not out.isOpened():
         print(f"Error: Could not create output video {output_path}")
         cap.release()
-        return []
+        return [], []
 
     all_landmarks = []
     frame_times = []
@@ -394,7 +401,6 @@ def processing(video_path, output_path, pose):
         if frame_count % 100 == 0:
             print(f"  - Processed {frame_count} frames")
 
-
     cap.release()
     out.release()
     return all_landmarks, frame_times
@@ -404,6 +410,9 @@ def process_videos(video_dir, output_dir):
     pose = mp_pose.Pose(static_image_mode=False, model_complexity=2, enable_segmentation=False,
                         min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
+    if not os.path.isdir(video_dir) or not os.listdir(video_dir):
+        return
+
     for file_name in os.listdir(video_dir):
         video_extensions = ('.mp4', '.mov', '.avi', '.mkv', '.MP4', '.MOV', '.AVI', '.MKV')
         if not file_name.lower().endswith(tuple(ext.lower() for ext in video_extensions)):
@@ -411,12 +420,17 @@ def process_videos(video_dir, output_dir):
 
         print(f"Processing: {file_name}")
         video_path = os.path.join(video_dir, file_name)
-        output_path = os.path.join(output_dir, f"{os.path.splitext(file_name)[0]}_stick.avi")
+
+        # --- ZMIANA: Zapis do poprawnego katalogu output_dir + .mp4 ---
+        output_path = os.path.join(output_dir, f"{os.path.splitext(file_name)[0]}_stick.mp4")
         trajectory_path = os.path.join(output_dir, f"{os.path.splitext(file_name)[0]}_height_analysis.csv")
 
         all_landmarks, frame_times = processing(video_path, output_path, pose)
 
         # DEBUG: Check for missing frames
+        if not all_landmarks:
+            continue
+
         none_count = sum(1 for x in all_landmarks if x is None)
         print(f"  - Missing frames before interpolation: {none_count}/{len(all_landmarks)}")
 
@@ -462,7 +476,8 @@ def process_videos(video_dir, output_dir):
             print(f"  - WARNING: Could not calculate person height for {file_name}")
 
         print(f"  - Person height: {person_height:.1f} pixels")
-        print(f"  - Thigh length: {thigh_length:.1f} pixels" if thigh_length else "  - Could not calculate thigh length")
+        print(
+            f"  - Thigh length: {thigh_length:.1f} pixels" if thigh_length else "  - Could not calculate thigh length")
         print(f"  - Shin length: {shin_length:.1f} pixels" if shin_length else "  - Could not calculate shin length")
 
         # # Process landmarks
@@ -494,7 +509,6 @@ def process_videos(video_dir, output_dir):
                 height_features = calculate_height_features(person_height)
                 all_squat_features.append(height_features)
 
-
         # Export CSV with camera angles
         export_height_analysis_csv(all_squat_features, person_height, thigh_length, shin_length,
                                    horizontal_angle, vertical_angle, frame_times, trajectory_path)
@@ -504,9 +518,10 @@ def process_videos(video_dir, output_dir):
         print(f"  - Height analysis CSV: {trajectory_path}")
 
 
-def ToCSV(InputDir):
+# --- ZMIANA: Funkcja przyjmuje OutputDir ---
+def ToCSV(InputDir, OutputDir):
     video_dir = InputDir
-    output_dir = "./processed_videos/"
+    output_dir = OutputDir
 
     # Create output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)

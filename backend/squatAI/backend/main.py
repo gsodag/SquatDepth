@@ -1,5 +1,6 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 import uvicorn
 import os
 import tempfile
@@ -38,6 +39,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# --- POPRAWKA: MONTOWANIE KATALOGU Z WIDEO ---
+PROCESSED_VIDEOS_DIR = os.path.join(BASE_DIR, "processed_videos")
+os.makedirs(PROCESSED_VIDEOS_DIR, exist_ok=True)
+app.mount("/videos", StaticFiles(directory=PROCESSED_VIDEOS_DIR), name="videos")
+# ---------------------------------------------
 
 # Ścieżki do plików modelu
 PATH_TO_MODEL = os.path.join(BASE_DIR, "results/Squat_CNN_LSTM_v2_20250813_012229/mdl_wts.keras")
@@ -198,15 +205,41 @@ async def upload_video(file: UploadFile = File(...)):
 
         # Preprocessing wideo
         logger.info("Starting video preprocessing...")
-        outputDirectory = ToCSV(temp_input_dir)
+
+        # --- POPRAWKA: Przekazanie PROCESSED_VIDEOS_DIR ---
+        outputDirectory = ToCSV(temp_input_dir, PROCESSED_VIDEOS_DIR)
+        # --------------------------------------------------
 
         # Znajdź CSV
         csv_files = [f for f in os.listdir(outputDirectory) if f.endswith('_height_analysis.csv')]
-        if not csv_files:
-            raise HTTPException(status_code=500, detail="No CSV file generated from preprocessing")
 
-        csv_path = os.path.join(outputDirectory, csv_files[-1])
+        # Filtrujemy, aby znaleźć CSV pasujące do naszego pliku
+        base_filename = os.path.splitext(file.filename)[0]
+        # Szukamy pliku, który w nazwie ma nazwę pliku bazowego (żeby uniknąć konfliktów przy wielu plikach)
+        matching_csv = next((f for f in csv_files if base_filename in f), None)
+
+        if not matching_csv:
+            # Fallback: jeśli nie znaleziono po nazwie, a jest tylko jeden plik CSV (bo katalog czyszczony), weź go
+            if len(csv_files) == 1:
+                matching_csv = csv_files[0]
+            else:
+                raise HTTPException(status_code=500, detail="No CSV file generated from preprocessing")
+
+        csv_path = os.path.join(outputDirectory, matching_csv)
         logger.info(f"Using CSV file: {csv_path}")
+
+        # --- POPRAWKA: Szukanie wideo i generowanie URL ---
+        video_files = [f for f in os.listdir(outputDirectory) if f.endswith('_stick.mp4')]
+        video_url = None
+
+        # Szukamy wideo pasującego do nazwy pliku wejściowego
+        matching_video = next((v for v in video_files if base_filename in v), None)
+
+        if matching_video:
+            # Generujemy URL wskazujący na endpoint /videos
+            video_url = f"http://localhost:8001/videos/{matching_video}"
+            logger.info(f"Generated video URL: {video_url}")
+        # --------------------------------------------------
 
         # Wczytaj i przygotuj dane
         logger.info("Reading CSV and preparing data...")
@@ -270,6 +303,7 @@ async def upload_video(file: UploadFile = File(...)):
                 "incorrect": prob_incorrect,
                 "correct": prob_correct
             },
+            "video_url": video_url,  # Zwracamy URL wideo
             "debug_info": {
                 "data_shape": list(X_processed.shape),
                 "raw_data_range": [float(X.min()), float(X.max())],

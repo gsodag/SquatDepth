@@ -245,7 +245,7 @@ def export_side_view_analysis_csv(squat_features, median_torso, median_thigh, me
         writer = csv.writer(csvfile)
 
         headers = [
-            'frame_time_seconds',
+
             'mainHip_height_percent',
             'mainKnee_height_percent',
             'torso_proportion_percent',
@@ -255,14 +255,15 @@ def export_side_view_analysis_csv(squat_features, median_torso, median_thigh, me
             'angle_foot_shin',
             'angle_core_thigh',
             'angle_thigh_horizontal',
-            'mainCore_vertical_angle'
+            'mainCore_vertical_angle',
+            'frame_time_seconds'
         ]
         writer.writerow(headers)
 
         for frame_idx, frame_features in enumerate(squat_features):
             row = []
 
-            row.append(frame_times[frame_idx] if frame_idx < len(frame_times) else None)
+
 
             row.append(frame_features.get('mainHip_height_percent'))
             row.append(frame_features.get('mainKnee_height_percent'))
@@ -276,6 +277,8 @@ def export_side_view_analysis_csv(squat_features, median_torso, median_thigh, me
             row.append(frame_features.get('angle_core_thigh'))
             row.append(frame_features.get('angle_thigh_horizontal'))
             row.append(frame_features.get('mainCore_vertical_angle'))
+
+            row.append(frame_times[frame_idx] if frame_idx < len(frame_times) else None)
 
             writer.writerow(row)
 
@@ -466,8 +469,8 @@ def process_videos():
     pose = mp_pose.Pose(static_image_mode=False, model_complexity=2, enable_segmentation=False,
                         min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
-    video_dir = "../squat_clips_acc"
-    output_dir = "../stick_figures_acc"
+    video_dir = "../squats_acc/FAIL"
+    output_dir = "../stick_figures_acc/fails"
 
     os.makedirs(output_dir, exist_ok=True)
 
@@ -483,7 +486,7 @@ def process_videos():
 
         base_name = os.path.splitext(file_name)[0]
         temp_output_path = os.path.join(output_dir, f"{base_name}_acc_stick_temp.avi")
-        trajectory_path = os.path.join(output_dir, f"{base_name}_acc_analysis.csv")
+        trajectory_path = os.path.join(output_dir, f"{base_name}_acc_analysis_INCORRECT.csv")
 
         all_landmarks_normalized, frame_times, width, height = processing(video_path, temp_output_path, pose)
 
@@ -567,7 +570,7 @@ def process_videos():
 
         if time_min_to_max is not None:
             time_str = f"T_{time_min_to_max:.3f}s"
-            new_file_name = f"{base_name}_{time_str}_acc_stick.avi"
+            new_file_name = f"{base_name}_{time_str}_acc_stick_INCORRECT.avi"
             final_output_path = os.path.join(output_dir, new_file_name)
 
             try:
