@@ -64,3 +64,5 @@ backend/requirements.txt
 /backend/squatAI/stick_figures_acc
 /backend/squatAI/squats_acc
 
+backend/squatAI/acc_training_data
+backend/squatAI/acc_training_slim
