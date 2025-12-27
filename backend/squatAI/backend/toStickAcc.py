@@ -14,7 +14,6 @@ landmark_data = {}
 
 
 def calculate_body_side_view(landmarks, width, height, visibility_threshold=0.0):
-
     global landmark_data
     landmark_data.clear()
 
@@ -64,7 +63,6 @@ def calculate_body_side_view(landmarks, width, height, visibility_threshold=0.0)
 
 
 def calculate_segment_lengths_and_height_factor(current_landmark_data):
-
     if not current_landmark_data:
         return None
     try:
@@ -124,8 +122,6 @@ def calculate_angle_3pt(a, b, c):
 
 
 def calculate_segment_angle(p1, p2):
-
-
     segment_vector = p2 - p1
 
     angle = np.arctan2(segment_vector[0], -segment_vector[1])
@@ -134,7 +130,6 @@ def calculate_segment_angle(p1, p2):
 
 
 def calculate_side_view_features(main_side, landmark_data, const_person_height, torso_perc, thigh_perc, shin_perc):
-
     features = {}
 
     default_features = {key: None for key in [
@@ -190,7 +185,6 @@ def calculate_side_view_features(main_side, landmark_data, const_person_height, 
 
 
 def calculate_time_from_min_to_max_hip_height(all_squat_features, frame_times):
-
     hip_heights_perc = [f.get('mainHip_height_percent') for f in all_squat_features]
 
     valid_data = [(i, h) for i, h in enumerate(hip_heights_perc) if h is not None]
@@ -245,7 +239,6 @@ def export_side_view_analysis_csv(squat_features, median_torso, median_thigh, me
         writer = csv.writer(csvfile)
 
         headers = [
-
             'mainHip_height_percent',
             'mainKnee_height_percent',
             'torso_proportion_percent',
@@ -262,8 +255,6 @@ def export_side_view_analysis_csv(squat_features, median_torso, median_thigh, me
 
         for frame_idx, frame_features in enumerate(squat_features):
             row = []
-
-
 
             row.append(frame_features.get('mainHip_height_percent'))
             row.append(frame_features.get('mainKnee_height_percent'))
@@ -345,7 +336,6 @@ def processing(video_path, output_path, pose):
     rotation = 0
 
     try:
-        # ... (ffprobe logic remains unchanged)
         result = subprocess.run(['ffprobe', '-i', video_path, '-show_streams', '-v', 'quiet', '-print_format', 'json'],
                                 capture_output=True, text=True, check=False)
         probe_data = json.loads(result.stdout)
@@ -360,22 +350,14 @@ def processing(video_path, output_path, pose):
     except Exception:
         pass
 
-    # --- DIMENSION CALCULATION FIX ---
-
-    # 1. Calculate dimensions after metadata rotation
     if abs(rotation) % 180 == 90:
         out_width, out_height = initial_height, initial_width
     else:
         out_width, out_height = initial_width, initial_height
 
-    # 2. Account for the final, UNCONDITIONAL 90-degree rotation.
-    # Since we are adding an unconditional ROTATE_90_COUNTERCLOCKWISE later,
-    # we must SWAP the final output dimensions.
     out_width, out_height = out_height, out_width
 
-    # The dimensions are now correctly swapped (e.g., 1080x1920 -> 1920x1080)
-
-    fourcc = cv2.VideoWriter_fourcc(*'MJPG')
+    fourcc = cv2.VideoWriter_fourcc(*'avc1')
     out = cv2.VideoWriter(output_path, fourcc, fps, (out_width, out_height))
 
     if not out.isOpened():
@@ -387,7 +369,6 @@ def processing(video_path, output_path, pose):
     frame_count = 0
     VISIBILITY_THRESHOLD_DRAW = 0.3
 
-    # Use the new, correct dimensions for current_width/height initialization
     current_width, current_height = out_width, out_height
 
     while cap.isOpened():
@@ -396,7 +377,6 @@ def processing(video_path, output_path, pose):
             break
         frame_count += 1
 
-        # 1. Apply rotation based on video metadata (rotation variable)
         if rotation == 90:
             frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
         elif rotation == 180 or rotation == -180:
@@ -404,14 +384,9 @@ def processing(video_path, output_path, pose):
         elif rotation == 270 or rotation == -90:
             frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
 
-        # 2. Unconditional 90-degree counter-clockwise flip (to fix persistent "flipped right" issue)
         frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
 
-        # IMPORTANT: The current_height and current_width variables MUST be updated
-        # *after* the rotation to match the frame's new dimensions for MediaPipe.
         current_height, current_width, _ = frame.shape
-
-        # ... (rest of the function is unchanged)
 
         current_time_msec = cap.get(cv2.CAP_PROP_POS_MSEC)
         current_time_sec = current_time_msec / 1000.0 if current_time_msec > 0 else frame_count / fps
@@ -465,14 +440,9 @@ def processing(video_path, output_path, pose):
     return all_landmarks_normalized, frame_times, current_width, current_height
 
 
-def process_videos():
+def process_videos(video_dir, output_dir):
     pose = mp_pose.Pose(static_image_mode=False, model_complexity=2, enable_segmentation=False,
                         min_detection_confidence=0.5, min_tracking_confidence=0.5)
-
-    video_dir = "../squats_acc/FAIL"
-    output_dir = "../stick_figures_acc/fails"
-
-    os.makedirs(output_dir, exist_ok=True)
 
     if not os.path.isdir(video_dir) or not os.listdir(video_dir):
         return
@@ -485,8 +455,9 @@ def process_videos():
         video_path = os.path.join(video_dir, file_name)
 
         base_name = os.path.splitext(file_name)[0]
-        temp_output_path = os.path.join(output_dir, f"{base_name}_acc_stick_temp.avi")
-        trajectory_path = os.path.join(output_dir, f"{base_name}_acc_analysis_INCORRECT.csv")
+
+        temp_output_path = os.path.join(output_dir, f"{base_name}_acc_stick_temp.mp4")
+        trajectory_path = os.path.join(output_dir, f"{base_name}_acc_analysis.csv")
 
         all_landmarks_normalized, frame_times, width, height = processing(video_path, temp_output_path, pose)
 
@@ -570,7 +541,7 @@ def process_videos():
 
         if time_min_to_max is not None:
             time_str = f"T_{time_min_to_max:.3f}s"
-            new_file_name = f"{base_name}_{time_str}_acc_stick_INCORRECT.avi"
+            new_file_name = f"{base_name}_{time_str}_acc_stick.mp4"
             final_output_path = os.path.join(output_dir, new_file_name)
 
             try:
@@ -578,10 +549,15 @@ def process_videos():
             except OSError:
                 final_output_path = temp_output_path
         else:
-            final_output_path = os.path.join(output_dir, f"{base_name}_acc_stick.avi")
+            final_output_path = os.path.join(output_dir, f"{base_name}_acc_stick.mp4")
             if os.path.exists(temp_output_path):
                 os.rename(temp_output_path, final_output_path)
 
+def ToCSV(InputDir, OutputDir):
+    video_dir = InputDir
+    output_dir = OutputDir
 
-if __name__ == "__main__":
-    process_videos()
+    os.makedirs(output_dir, exist_ok=True)
+
+    process_videos(video_dir, output_dir)
+    return output_dir

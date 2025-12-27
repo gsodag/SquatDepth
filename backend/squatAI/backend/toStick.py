@@ -3,10 +3,8 @@ import numpy as np
 import os
 import mediapipe as mp
 import csv
-import tensorflow as tf
 import subprocess
 import json
-import uuid
 
 mp_pose = mp.solutions.pose
 POSE_CONNECTIONS = mp_pose.POSE_CONNECTIONS
@@ -17,12 +15,10 @@ landmark_positions = {}
 def calculate_body(landmarks):
     global landmark_positions
     if landmarks is None or not isinstance(landmarks, (list, np.ndarray)) or len(landmarks) < 33:
-        # print("Error: Invalid landmarks input")
         landmark_positions.clear()
         return
     try:
-        lm = np.array([[lm[0], lm[1]] for lm in landmarks])  # Use only x,y coordinates
-        # Get landmark positions and store in global dictionary
+        lm = np.array([[lm[0], lm[1]] for lm in landmarks])
         landmark_positions['left_shoulder'] = lm[mp_pose.PoseLandmark.LEFT_SHOULDER.value]
         landmark_positions['right_shoulder'] = lm[mp_pose.PoseLandmark.RIGHT_SHOULDER.value]
         landmark_positions['left_hip'] = lm[mp_pose.PoseLandmark.LEFT_HIP.value]
@@ -40,9 +36,6 @@ def calculate_body(landmarks):
         print(f"Error calculating body landmarks: {e}")
         landmark_positions.clear()
 
-
-# Horizontal angle: Uses body symmetry and apparent width ratios
-# Vertical angle: Uses body proportions and joint positions
 def calculate_camera_angles(landmarks):
     if not landmark_positions:
         return None, None
@@ -57,7 +50,6 @@ def calculate_camera_angles(landmarks):
         left_torso_width = np.linalg.norm(landmark_positions['left_shoulder'] - landmark_positions['left_hip'])
         right_torso_width = np.linalg.norm(landmark_positions['right_shoulder'] - landmark_positions['right_hip'])
 
-        # Zabezpieczenie przed dzieleniem przez zero
         torso_sum = right_torso_width + left_torso_width
         if torso_sum == 0: torso_sum = 0.001
 
@@ -79,17 +71,14 @@ def calculate_camera_angles(landmarks):
         ankle_width = np.linalg.norm(landmark_positions['right_ankle'] - landmark_positions['left_ankle'])
 
         width_ratio = hip_width / shoulder_width
-        # From front view, hip/shoulder ratio should be around 0.8-1.2
         width_deviation = abs(width_ratio - 1.0)
         ankle_shoulder_ratio = ankle_width / shoulder_width
-        ankle_deviation = abs(ankle_shoulder_ratio - 0.6)  # Ankles typically narrower
+        ankle_deviation = abs(ankle_shoulder_ratio - 0.6)
 
         vertical_angle = overall_body_angle * 0.7
 
-        # Add torso tilt component
         vertical_angle += torso_angle * 0.3
 
-        # Adjust based on width consistency (more deviation = more angled)
         if width_deviation > 0.3:
             vertical_angle += (width_deviation - 0.3) * 20
 
@@ -99,8 +88,6 @@ def calculate_camera_angles(landmarks):
         print(f"Error calculating camera angles: {e}")
         return None, None
 
-
-# Smooth landmark history (simple moving average)
 def smooth_landmarks(history, current):
     if current is None:
         return None
@@ -124,7 +111,7 @@ def calculate_person_height(landmarks):
         ]
         lowest_foot_y = max([point[1] for point in foot_points])
         person_height = lowest_foot_y - landmark_positions['nose'][1]
-        return max(person_height, 0)  # Ensure positive height
+        return max(person_height, 0)
 
     except Exception as e:
         print(f"Error calculating height: {e}")
@@ -132,10 +119,6 @@ def calculate_person_height(landmarks):
 
 
 def calculate_segment_lengths(landmarks):
-    """
-    Calculate thigh and shin lengths from landmarks.
-    Returns (left_thigh, right_thigh, left_shin, right_shin) lengths in pixels.
-    """
 
     if landmarks is None:
         return None, None, None, None
@@ -154,11 +137,6 @@ def calculate_segment_lengths(landmarks):
 
 
 def calculate_height_features(person_height):
-    """
-    Calculate height-based features for squat analysis.
-    Returns height percentages and absolute joint positions.
-    Now includes separate percentages for left and right legs.
-    """
     features = {}
 
     if not landmark_positions or person_height is None or person_height <= 0:
@@ -180,8 +158,6 @@ def calculate_height_features(person_height):
         ]
         lowest_foot_y = max([point[1] for point in foot_points])
 
-        # Calculate heights from the person's base (lowest foot point)
-        # This gives us height relative to the person's feet, not the screen
         left_hip_height = lowest_foot_y - landmark_positions['left_hip'][1]
         right_hip_height = lowest_foot_y - landmark_positions['right_hip'][1]
         left_knee_height = lowest_foot_y - landmark_positions['left_knee'][1]
@@ -189,8 +165,6 @@ def calculate_height_features(person_height):
         left_shoulder_height = lowest_foot_y - landmark_positions['left_shoulder'][1]
         right_shoulder_height = lowest_foot_y - landmark_positions['right_shoulder'][1]
 
-        # Calculate height percentages based on person's actual height
-        # This is now correctly relative to the person's height, not screen height
         features['left_hip_height_percent'] = (left_hip_height / person_height) * 100
         features['right_hip_height_percent'] = (right_hip_height / person_height) * 100
         features['left_knee_height_percent'] = (left_knee_height / person_height) * 100
@@ -198,7 +172,6 @@ def calculate_height_features(person_height):
         features['left_shoulder_height_percent'] = (left_shoulder_height / person_height) * 100
         features['right_shoulder_height_percent'] = (right_shoulder_height / person_height) * 100
 
-        # Store absolute heights (in pixels from person's base)
         features['left_hip_height'] = left_hip_height
         features['right_hip_height'] = right_hip_height
         features['left_knee_height'] = left_knee_height
@@ -215,11 +188,10 @@ def calculate_height_features(person_height):
 
 def export_height_analysis_csv(squat_features, person_height, thigh_length, shin_length, horizontal_angle,
                                vertical_angle, frame_times, out_path):
-    """Export height-based squat analysis features to CSV with camera angles."""
+
     with open(out_path, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
 
-        # Updated headers to include camera angles
         headers = [
             'left_hip_height_percent', 'right_hip_height_percent',
             'left_knee_height_percent', 'right_knee_height_percent',
@@ -232,11 +204,9 @@ def export_height_analysis_csv(squat_features, person_height, thigh_length, shin
         for frame_idx, frame_features in enumerate(squat_features):
             row = []
 
-            # Add frame-specific percentage features
-            for header in headers[:-6]:  # Skip person_height, thigh_length, shin_length, and camera angles
+            for header in headers[:-6]:
                 row.append(frame_features.get(header, None))
 
-            # Add constant values for each row
             row.extend([person_height, thigh_length, shin_length, horizontal_angle, vertical_angle])
 
             if frame_idx < len(frame_times):
@@ -246,21 +216,15 @@ def export_height_analysis_csv(squat_features, person_height, thigh_length, shin
 
             writer.writerow(row)
 
-
-# Interpolate missing landmark frames
 def interpolate_missing_landmarks(all_landmarks):
-    """Interpolate missing landmarks in-place"""
     for i in range(len(all_landmarks)):
         if all_landmarks[i] is None:
-            # Find previous valid frame
             prev_idx = i - 1
             while prev_idx >= 0 and all_landmarks[prev_idx] is None:
                 prev_idx -= 1
-            # Find next valid frame
             next_idx = i + 1
             while next_idx < len(all_landmarks) and all_landmarks[next_idx] is None:
                 next_idx += 1
-            # Interpolate
             if prev_idx >= 0 and next_idx < len(all_landmarks):
                 prev_landmarks = np.array(all_landmarks[prev_idx])
                 next_landmarks = np.array(all_landmarks[next_idx])
@@ -273,10 +237,7 @@ def interpolate_missing_landmarks(all_landmarks):
                 all_landmarks[i] = all_landmarks[next_idx]
     return all_landmarks
 
-
-# Apply temporal smoothing to reduce noise
 def apply_temporal_smoothing(all_landmarks, window_size=5):
-    """Apply temporal smoothing to all landmarks"""
     if len(all_landmarks) < window_size:
         return all_landmarks
 
@@ -287,18 +248,15 @@ def apply_temporal_smoothing(all_landmarks, window_size=5):
             smoothed_landmarks.append(None)
             continue
 
-        # Define window around current frame
         start_idx = max(0, i - window_size // 2)
         end_idx = min(len(all_landmarks), i + window_size // 2 + 1)
 
-        # Collect valid landmarks in window
         valid_landmarks = []
         for j in range(start_idx, end_idx):
             if all_landmarks[j] is not None:
                 valid_landmarks.append(np.array(all_landmarks[j]))
 
         if valid_landmarks:
-            # Average the valid landmarks
             avg_landmarks = np.mean(valid_landmarks, axis=0)
             smoothed_landmarks.append(avg_landmarks.tolist())
         else:
@@ -313,7 +271,6 @@ def processing(video_path, output_path, pose):
         print(f"Error: Could not open input video {video_path}")
         return [], []
 
-    # This is fps value - we will need that to our train code
     fps = cap.get(cv2.CAP_PROP_FPS)
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -343,7 +300,6 @@ def processing(video_path, output_path, pose):
     else:
         out_width, out_height = width, height
 
-    # --- ZMIANA: Kodek avc1 (H.264) ---
     fourcc = cv2.VideoWriter_fourcc(*'avc1')
     out = cv2.VideoWriter(output_path, fourcc, fps, (out_width, out_height))
 
@@ -363,9 +319,7 @@ def processing(video_path, output_path, pose):
             break
         frame_count += 1
 
-        # Zastosuj rotację, jeśli jest potrzebna
         if rotation != 0:
-            # Obróć ramkę o efektywny kąt
             if rotation == 90:
                 frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
                 width, height = height, width
@@ -421,27 +375,23 @@ def process_videos(video_dir, output_dir):
         print(f"Processing: {file_name}")
         video_path = os.path.join(video_dir, file_name)
 
-        # --- ZMIANA: Zapis do poprawnego katalogu output_dir + .mp4 ---
         output_path = os.path.join(output_dir, f"{os.path.splitext(file_name)[0]}_stick.mp4")
         trajectory_path = os.path.join(output_dir, f"{os.path.splitext(file_name)[0]}_height_analysis.csv")
 
         all_landmarks, frame_times = processing(video_path, output_path, pose)
 
-        # DEBUG: Check for missing frames
         if not all_landmarks:
             continue
 
         none_count = sum(1 for x in all_landmarks if x is None)
         print(f"  - Missing frames before interpolation: {none_count}/{len(all_landmarks)}")
 
-        # Process landmarks: interpolate first, then smooth
         print("  - Interpolating missing frames...")
         all_landmarks = interpolate_missing_landmarks(all_landmarks)
 
         print("  - Applying temporal smoothing...")
         all_landmarks = apply_temporal_smoothing(all_landmarks, window_size=5)
 
-        # Calculate person height from first valid frames (median of first 10 frames)
         print("  - Calculating person height and segment lengths...")
         heights = []
         thigh_lengths = []
@@ -465,7 +415,6 @@ def process_videos(video_dir, output_dir):
                     horizontal_angles.append(h_angle)
                     vertical_angles.append(v_angle)
 
-        # Use median values for stability
         person_height = np.median(heights) if heights else None
         thigh_length = np.median(thigh_lengths) if thigh_lengths else None
         shin_length = np.median(shin_lengths) if shin_lengths else None
@@ -480,14 +429,12 @@ def process_videos(video_dir, output_dir):
             f"  - Thigh length: {thigh_length:.1f} pixels" if thigh_length else "  - Could not calculate thigh length")
         print(f"  - Shin length: {shin_length:.1f} pixels" if shin_length else "  - Could not calculate shin length")
 
-        # # Process landmarks
         print("  - Interpolating missing frames...")
         all_landmarks = interpolate_missing_landmarks(all_landmarks)
         print("  - Applying temporal smoothing...")
         all_landmarks = apply_temporal_smoothing(all_landmarks, window_size=5)
 
         if person_height is None and all_landmarks:
-            # Retry height calculation with all frames
             for frame_landmarks in all_landmarks[:10]:
                 if frame_landmarks is not None:
                     calculate_body(frame_landmarks)
@@ -500,7 +447,6 @@ def process_videos(video_dir, output_dir):
             print(f"  - WARNING: Could not calculate person height for {file_name}")
             continue
         else:
-            # Calculate features for all frames
             print("  - Calculating height-based features...")
             all_squat_features = []
             for frame_idx, frame_landmarks in enumerate(all_landmarks):
@@ -509,7 +455,6 @@ def process_videos(video_dir, output_dir):
                 height_features = calculate_height_features(person_height)
                 all_squat_features.append(height_features)
 
-        # Export CSV with camera angles
         export_height_analysis_csv(all_squat_features, person_height, thigh_length, shin_length,
                                    horizontal_angle, vertical_angle, frame_times, trajectory_path)
 
@@ -517,13 +462,10 @@ def process_videos(video_dir, output_dir):
         print(f"  - Stick figure video: {output_path}")
         print(f"  - Height analysis CSV: {trajectory_path}")
 
-
-# --- ZMIANA: Funkcja przyjmuje OutputDir ---
 def ToCSV(InputDir, OutputDir):
     video_dir = InputDir
     output_dir = OutputDir
 
-    # Create output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
 
     process_videos(video_dir, output_dir)
