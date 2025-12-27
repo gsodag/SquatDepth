@@ -42,22 +42,22 @@ const DotsCalc = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-zinc-900 to-zinc-800 py-10">
       <div className="bg-zinc-950 rounded-2xl shadow-2xl p-8 w-full max-w-2xl border-2 border-red-700">
-        <h1 className="text-4xl font-extrabold text-center mb-4 text-white tracking-tight drop-shadow">DOTS Calculator</h1>
+        <h1 className="text-4xl font-extrabold text-center mb-4 text-white tracking-tight drop-shadow">Kalkulator DOTS</h1>
         <form className="flex flex-col gap-6 mb-8">
           <div className="flex gap-4">
-            <label className="text-zinc-200 font-semibold">Gender:</label>
+            <label className="text-zinc-200 font-semibold">Płeć:</label>
             <select
               value={gender}
               onChange={e => setGender(e.target.value)}
               className="bg-zinc-800 text-white p-2 rounded border border-zinc-700 focus:border-red-500 focus:ring-2 focus:ring-red-600"
             >
-              <option value="male">Male</option>
-              <option value="female">Female</option>
+              <option value="male">M</option>
+              <option value="female">K</option>
             </select>
           </div>
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex flex-col flex-1">
-              <label className="text-zinc-200">Body Weight (kg):</label>
+              <label className="text-zinc-200">Waga ciała (kg):</label>
               <input
                 type="number"
                 value={bw}
@@ -105,7 +105,7 @@ const DotsCalc = () => {
           </div>
         </form>
         <div className="border-t border-zinc-700 pt-6 text-center">
-          <div className="text-xl font-bold text-zinc-100 mb-2">Your DOTS Score</div>
+          <div className="text-xl font-bold text-zinc-100 mb-2">Wynik DOTS</div>
           <div className="text-3xl font-extrabold text-red-500 drop-shadow">{dots ? dots.toFixed(2) : "--"}</div>
           <div className="text-zinc-400 mt-2">Total: <span className="text-white">{total}</span> kg</div>
         </div>

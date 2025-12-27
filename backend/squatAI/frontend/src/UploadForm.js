@@ -162,14 +162,14 @@ function UploadForm() {
 
                     {error && (
                         <div className="p-4 bg-red-900/30 text-red-200 border border-red-800 rounded-lg">
-                            ❌ {error}
+                            {error}
                         </div>
                     )}
 
                     {result && (
                         <div className={`p-8 border-2 rounded-xl text-center shadow-2xl ${resultClass}`}>
                             <h3 className="text-5xl font-extrabold mb-2">
-                                {result === "PASS" ? "ZALICZONE! 🎉" : "NIEZALICZONE"}
+                                {result === "PASS" ? "ZALICZONE!" : "NIEZALICZONE"}
                             </h3>
                             <p className="text-xl opacity-90">Model: {model.toUpperCase()}</p>
                         </div>

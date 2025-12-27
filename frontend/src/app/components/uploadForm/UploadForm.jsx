@@ -239,7 +239,7 @@ function UploadForm() {
                     {result && (
                         <div className={`mt-6 p-10 border-2 rounded-xl text-center shadow-2xl ${resultClass}`}>
                             <h3 className="text-5xl font-extrabold mb-3 animate-pulse">
-                                {result === "PASS" ? "PRZYSIAD ZALICZONY! 🎉" : "PRZYSIAD NIEZALICZONY ❌"}
+                                {result === "PASS" ? "PRZYSIAD ZALICZONY!" : "PRZYSIAD NIEZALICZONY"}
                             </h3>
                             <p className="text-2xl font-medium">Oficjalny wynik analizy AI: <strong className="uppercase">{result}</strong></p>
                         </div>

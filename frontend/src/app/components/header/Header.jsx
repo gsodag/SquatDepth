@@ -11,13 +11,13 @@ const Header = () => {
       case "SquatAI":
         router.push('/pages/squatAI');
         break;
-      case "Load your Barbell":
+      case "Kalkulator Obciążenia":
         router.push('/pages/barbell');
         break;
-      case "DOTS Calculator":
+      case "Kalkulator DOTS":
         router.push('/pages/calculator');
         break;
-      case "1RM Calculator":
+      case "Kalkulator 1RM":
         router.push('/pages/repMax');
         break;
       default:
@@ -27,9 +27,9 @@ const Header = () => {
 
   const buttons = [
     "SquatAI",
-    "Load your Barbell",
-    "DOTS Calculator",
-    "1RM Calculator",
+    "Kalkulator Obciążenia",
+    "Kalkulator DOTS",
+    "Kalkulator 1RM",
   ];
 
   return (
@@ -37,7 +37,7 @@ const Header = () => {
       <nav className="max-w-7xl mx-auto flex items-center justify-between px-4 py-3">
         
         <button
-          className="flex items-center gap-3 group"
+          className="cursor-pointer flex items-center gap-3 group"
           onClick={() => router.push('/pages/squatAI')}
         >
           <span className="relative flex items-center">
@@ -55,7 +55,7 @@ const Header = () => {
             <li key={label}>
               <button
                 onClick={() => handleClick(label)}
-                className="px-4 py-2 rounded-xl font-bold uppercase tracking-wide transition duration-300 ease-in-out
+                className="cursor-pointer px-4 py-2 rounded-xl font-bold uppercase tracking-wide transition duration-300 ease-in-out
                   bg-zinc-800 text-zinc-200 hover:bg-red-600 hover:text-white shadow-lg
                   border border-zinc-700 hover:border-red-500 focus:outline-none focus:ring-4 focus:ring-red-700/50 transform hover:scale-105"
               >
