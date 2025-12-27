@@ -3,7 +3,7 @@ import React, { useState } from "react";
 
 function UploadForm() {
     const [video, setVideo] = useState(null);
-    const [model, setModel] = useState("accuracy");
+    const [model, setModel] = useState("comfort");
     const [result, setResult] = useState("");
     const [videoUrl, setVideoUrl] = useState("");
     const [loading, setLoading] = useState(false);
