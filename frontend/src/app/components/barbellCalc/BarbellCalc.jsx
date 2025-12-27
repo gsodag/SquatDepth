@@ -200,7 +200,7 @@ const BarbellCalc = () => {
                     placeholder="0"
                     min={0}
                   />
-                  <span className="text-zinc-400 text-sm">pary</span>
+                  <span className="text-zinc-400 text-sm"></span>
                 </div>
               ))}
             </div>

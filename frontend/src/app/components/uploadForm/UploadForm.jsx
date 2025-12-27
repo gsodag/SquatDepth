@@ -172,7 +172,7 @@ function UploadForm() {
 
                     <div className="flex-grow">
                         <label className="block text-base font-medium text-zinc-300 mb-3">
-                            Wybierz plik wideo (Preferowana długość filmu: 3-5 sekund, przytnij film zaraz przed rozpoczęciem przysiadu [zejścia ze sztangą w dół], oraz zaraz po wyprostowaniu bioder/kolan)
+                            Wybierz plik wideo (Przytnij film zaraz przed rozpoczęciem przysiadu (zejścia ze sztangą w dół), oraz zaraz po wyprostowaniu bioder/kolan)
                         </label>
                         <input
                             type="file"
@@ -241,7 +241,6 @@ function UploadForm() {
                             <h3 className="text-5xl font-extrabold mb-3 animate-pulse">
                                 {result === "PASS" ? "PRZYSIAD ZALICZONY!" : "PRZYSIAD NIEZALICZONY"}
                             </h3>
-                            <p className="text-2xl font-medium">Oficjalny wynik analizy AI: <strong className="uppercase">{result}</strong></p>
                         </div>
                     )}
 
