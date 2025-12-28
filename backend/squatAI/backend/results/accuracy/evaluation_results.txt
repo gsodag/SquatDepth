@@ -1,0 +1,21 @@
+Model: Squat_CNN_LSTM_ACCURACY_20251228_154410
+Accuracy: 0.9500
+
+--- Classification Report ---
+              precision    recall  f1-score   support
+
+           0       0.90      0.90      0.90        10
+           1       0.97      0.97      0.97        30
+
+    accuracy                           0.95        40
+   macro avg       0.93      0.93      0.93        40
+weighted avg       0.95      0.95      0.95        40
+
+
+--- Confusion Matrix ---
+[[ 9  1]
+ [ 1 29]]
+
+--- MISCLASSIFIED FILES ---
+File: IMG_6605_acc_analysis_CORRECT.csv | Expected: PASS | Predicted: FAIL
+File: IMG_6602_acc_analysis_INCORRECT.csv | Expected: FAIL | Predicted: PASS

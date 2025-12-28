@@ -66,3 +66,5 @@ backend/requirements.txt
 
 backend/squatAI/acc_training_data
 backend/squatAI/acc_training_slim
+backend/squatAI/old basic frontend
+backend/squatAI/matrix.py
