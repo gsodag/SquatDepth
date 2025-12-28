@@ -207,14 +207,29 @@ def evaluate_model(x_test, y_test, hist, model, model_name, test_ids, train_mean
     y_test_classes = np.argmax(y_test, axis=1)
 
     print("\nClassification Report:")
-    print(classification_report(y_test_classes, y_pred_classes))
+    report = classification_report(y_test_classes, y_pred_classes)  # Przypisz do zmiennej
+    print(report)
 
     cm = confusion_matrix(y_test_classes, y_pred_classes)
     print(f"Confusion Matrix:\n{cm}")
 
-    print("\n" + "=" * 40)
-    print("      MISCLASSIFIED VIDEOS DETAILED")
-    print("=" * 40)
+    results_path = os.path.join(models_folder_path, model_name, 'evaluation_results.txt')
+    with open(results_path, 'w', encoding='utf-8') as f:
+        f.write(f"Model: {model_name}\n")
+        f.write(f"Accuracy: {results[1]:.4f}\n\n")
+        f.write("--- Classification Report ---\n")
+        f.write(report)
+        f.write("\n\n--- Confusion Matrix ---\n")
+        f.write(str(cm))
+
+        f.write("\n\n--- MISCLASSIFIED FILES ---\n")
+        for i in range(len(test_ids)):
+            if y_test_classes[i] != y_pred_classes[i]:
+                expected = "PASS" if y_test_classes[i] == 1 else "FAIL"
+                predicted = "PASS" if y_pred_classes[i] == 1 else "FAIL"
+                f.write(f"File: {test_ids[i]} | Expected: {expected} | Predicted: {predicted}\n")
+
+    print(f"\nWyniki zapisano w pliku: {results_path}")
 
     false_positives = []
     false_negatives = []
